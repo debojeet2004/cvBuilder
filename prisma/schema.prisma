@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  resumes   Resume[]
+}
+
+model Resume {
+  id        String    @id @default(cuid())
+  userId    String
+  slug      String    @unique @default(cuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  name        String
+  bio         String
+  phoneNumber String
+  location    String
+  email       String
+  website     String
+  summary     String
+
+  socials        Social[]
+  skills         Skill[]
+  languages      Language[]
+  education      Education[]
+  experience     Experience[]
+  projects       Project[]
+  certifications Certification[]
+}
+
+model Social {
+  id       String @id @default(cuid())
+  resume   Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId String
+
+  platform String
+  username String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Skill {
+  id       String @id @default(cuid())
+  resume   Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId String
+
+  skill           String
+  experienceLevel String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Language {
+  id       String @id @default(cuid())
+  resume   Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId String
+
+  language    String
+  proficiency String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Education {
+  id       String @id @default(cuid())
+  resume   Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId String
+
+  institution        String
+  institutionWebsite String
+  degree             String
+  stream             String
+  score              String
+  startDate          DateTime
+  endDate            DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Experience {
+  id       String @id @default(cuid())
+  resume   Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId String
+
+  company     String
+  position    String
+  description String
+  startDate   DateTime
+  endDate     DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id       String @id @default(cuid())
+  resume   Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId String
+
+  name        String
+  url         String
+  description String
+  startDate   DateTime
+  endDate     DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Certification {
+  id       String @id @default(cuid())
+  resume   Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId String
+
+  name           String
+  issuedby       String
+  issuedDate     DateTime
+  description    String
+  CertificateUrl String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
