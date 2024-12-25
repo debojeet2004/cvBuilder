@@ -13,8 +13,7 @@ import { PhoneInput } from "@/components/ui/phone-input"
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { PersonalInfoInput, getFirstPersonalInfo, savePersonalInfo, clearPersonalInfo } from './lib/personalInfoDB';
-
+import useMainStore from '../../store/store' // Import the Zustand store
 
 export const personalInfoSchema = z.object({
     name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -44,88 +43,88 @@ type SocialAction =
     | { type: 'CLEAR_ALL_SOCIALS' };
 
 function PersonalInfo() {
-const form = useForm<PersonalInfoValues>({
-resolver: zodResolver(personalInfoSchema),
-defaultValues: {
-    name: "",
-    bio: "",
-    phoneNumber: "",
-    location: "",
-    email: "",
-    website: "",
-    socials: [{ platform: '', username: '' }],
-    summary: "",
-},
-})
+    const { setPersonalInfo } = useMainStore();
 
-const [socialState, dispatch] = React.useReducer(
-    (state: SocialState, action: SocialAction) => {
-        switch (action.type) {
-            case 'ADD_SOCIAL':
-                return {
-                    ...state,
-                    socialList: [...state.socialList, action.payload],
-                };
-            case 'REMOVE_SOCIAL':
-                return {
-                    ...state,
-                    socialList: state.socialList.filter((_, i) => i !== action.payload),
-                };
-            case 'TOGGLE_DIALOG':
-                return {
-                    ...state,
-                    isDialogOpen: !state.isDialogOpen,
-                };
-            case 'CLEAR_ALL_SOCIALS':
-                return {
-                    ...state,
-                    socialList: [],
-                };
-            default:
-                return state;
-        }
+    const form = useForm<PersonalInfoValues>({
+    resolver: zodResolver(personalInfoSchema),
+    defaultValues: {
+        name: "",
+        bio: "",
+        phoneNumber: "",
+        location: "",
+        email: "",
+        website: "",
+        socials: [{ platform: '', username: '' }],
+        summary: "",
     },
-    {
-        socialList: [],
-        isDialogOpen: false,
-    }
-);
+    })
 
-const handleAddSocial = () => {
-    const platform = form.getValues('socials.0.platform');
-    const username = form.getValues('socials.0.username');
-    if (platform && username) {
-        dispatch({ type: 'ADD_SOCIAL', payload: { platform, username } });
-        form.setValue('socials.0.platform', '');
-        form.setValue('socials.0.username', '');
-    } else {
-        toast.error("Please fill in all social fields");
-    }
-};
+    const [socialState, dispatch] = React.useReducer(
+        (state: SocialState, action: SocialAction) => {
+            switch (action.type) {
+                case 'ADD_SOCIAL':
+                    return {
+                        ...state,
+                        socialList: [...state.socialList, action.payload],
+                    };
+                case 'REMOVE_SOCIAL':
+                    return {
+                        ...state,
+                        socialList: state.socialList.filter((_, i) => i !== action.payload),
+                    };
+                case 'TOGGLE_DIALOG':
+                    return {
+                        ...state,
+                        isDialogOpen: !state.isDialogOpen,
+                    };
+                case 'CLEAR_ALL_SOCIALS':
+                    return {
+                        ...state,
+                        socialList: [],
+                    };
+                default:
+                    return state;
+            }
+        },
+        {
+            socialList: [],
+            isDialogOpen: false,
+        }
+    );
 
-const handleRemoveSocial = (index: number) => {
-    dispatch({ type: 'REMOVE_SOCIAL', payload: index });
-};
+    const handleAddSocial = () => {
+        const platform = form.getValues('socials.0.platform');
+        const username = form.getValues('socials.0.username');
+        if (platform && username) {
+            dispatch({ type: 'ADD_SOCIAL', payload: { platform, username } });
+            form.setValue('socials.0.platform', '');
+            form.setValue('socials.0.username', '');
+        } else {
+            toast.error("Please fill in all social fields");
+        }
+    };
 
-React.useEffect(() => {
-    const loadExistingData = async () => {
-        try {
-            const existingData = await getFirstPersonalInfo();
-            if (existingData) {
-                // Set form data
+    const handleRemoveSocial = (index: number) => {
+        dispatch({ type: 'REMOVE_SOCIAL', payload: index });
+    };
+
+    React.useEffect(() => {
+        const loadStoreData = () => {
+            const currentPersonalInfo = useMainStore.getState().personalInfo;
+            console.log("Current PersonalInfo:", currentPersonalInfo);
+            if (currentPersonalInfo.name) {
                 form.reset({
-                    name: existingData.name,
-                    bio: existingData.bio,
-                    phoneNumber: existingData.phoneNumber,
-                    location: existingData.location,
-                    email: existingData.email,
-                    website: existingData.website || '',
-                    summary: existingData.summary || ''
+                    name: currentPersonalInfo.name,
+                    bio: currentPersonalInfo.bio || '',
+                    phoneNumber: currentPersonalInfo.phone,
+                    location: currentPersonalInfo.location,
+                    email: currentPersonalInfo.email,
+                    website: currentPersonalInfo.website || '',
+                    summary: currentPersonalInfo.summary || ''
                 });
-                
-                // Set social links
-                if (existingData.socials && existingData.socials.length > 0) {
-                    existingData.socials.forEach(social => {
+
+                if (currentPersonalInfo.socialLinks && currentPersonalInfo.socialLinks.length > 0) {
+                    currentPersonalInfo.socialLinks.forEach(social => {
                         dispatch({ 
                             type: 'ADD_SOCIAL', 
                             payload: { 
@@ -136,42 +135,50 @@ React.useEffect(() => {
                     });
                 }
             }
-        } catch (error) {
-            console.error('Error loading existing data:', error);
-        }
-    };
-
-    loadExistingData();
-}, [form]);
+        };
+        loadStoreData();
+    }, [form]);
 
 const onSubmit = async (data: PersonalInfoValues) => {
     try {
-        const personalInfo: PersonalInfoInput = {
+        // Update Zustand store
+        setPersonalInfo({
             name: data.name,
             bio: data.bio,
-            phoneNumber: data.phoneNumber,
+            phone: data.phoneNumber,
             location: data.location,
             email: data.email,
-            website: data.website || undefined,
-            socials: socialState.socialList,
-            summary: data.summary || undefined
-        };
-
-        const id = await savePersonalInfo(personalInfo);
+            website: data.website,
+            socialLinks: socialState.socialList.map(social => ({
+                platform: social.platform,
+                username: social.username
+            })),
+            summary: data.summary 
+        });
         
-        if (id) {
-            toast.success("Personal information updated successfully!");
-        }
+        toast.success("Personal information updated successfully!");
+        console.log('Current Personal Info State page.tsx: ', useMainStore.getState().personalInfo);
+
     } catch (error) {
         console.error('Error saving personal info:', error);
         toast.error("Failed to save personal information");
     }
 }
 
-const handleClearForm = async () => {
+const handleClearForm = () => {
     try {
-        // Clear IndexedDB data
-        await clearPersonalInfo();
+        // Clear Zustand store
+        setPersonalInfo({
+            name: "",
+            bio: "",
+            phone: "",
+            location: "",
+            email: "",
+            website: "",
+            socialLinks: [],
+            summary: ""
+        });
+        
         // Reset form to empty values
         form.reset({
             name: "",

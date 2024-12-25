@@ -2,7 +2,7 @@
 
 import { BreadcrumbItem, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { BreadcrumbLink } from "@/components/ui/breadcrumb"
-import { ChevronRight, File, Download as DownloadIcon, Share as ShareIcon, Save as SaveIcon } from "lucide-react"
+import { ChevronRight, File, Download as DownloadIcon, Save as SaveIcon } from "lucide-react"
 import { BreadcrumbList } from "@/components/ui/breadcrumb"
 import DashboardBreadcrumb from "@/components/sidebar/dashboardBreadcrumb"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import useMainStore from "../../store/store"
 
 const formSchema = z.object({
     fileName: z.string().min(1, "File name is required").max(50, "File name cannot exceed 50 characters"),
@@ -18,7 +19,7 @@ const formSchema = z.object({
 })
 
 export default function NavItems() {
-
+    const { personalInfo, skillsAndLanguages, educations, projects, experiences, certificates } = useMainStore();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -30,7 +31,12 @@ export default function NavItems() {
     // Add form submission handler
     function onSubmit(values: z.infer<typeof formSchema>) {
         console.log(values)
-        // Handle save/download/share actions here
+        console.log("personalInfo:", personalInfo)
+        console.log("skillsAndLanguages:", skillsAndLanguages)
+        console.log("educations:", educations)
+        console.log("projects:", projects)
+        console.log("experiences:", experiences)
+        console.log("certificates:", certificates)
     }
     return (
         <>

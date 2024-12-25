@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
-import React from 'react'
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { format } from "date-fns"
-import { CalendarIcon, PlusIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { format } from "date-fns";
+import { CalendarIcon, PlusIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
     Form,
     FormControl,
@@ -14,68 +14,79 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Calendar } from "@/components/ui/calendar"
-import { Checkbox } from "@/components/ui/checkbox"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "@/components/ui/popover"
-import { TypographyH3 } from '@/components/ui/Typography'
-import { CustomCard } from '../_components/cardItem'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { toast } from 'sonner'
-import { saveEducation, getEducation, clearEducation } from './lib/educationDB';
-
+} from "@/components/ui/popover";
+import { TypographyH3 } from "@/components/ui/Typography";
+import { CustomCard } from "../_components/cardItem";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+import useMainStore from "../../store/store";
 // Schema definition
 const educationSchema = z.object({
     institutionName: z.string(),
-    website: z.string().url({ message: "Please enter a valid URL" }).optional().or(z.literal("")),
+    website: z
+        .string()
+        .url({ message: "Please enter a valid URL" })
+        .optional()
+        .or(z.literal("")),
     areaOfStudy: z.string(),
     typeOfStudy: z.string(),
     description: z.string().optional(),
-    startDate: z.date(),
+    startDate: z.date().optional(),
     endDate: z.date().optional().nullable(),
     ongoing: z.boolean().default(false),
-})
+});
 
-type EducationFormValues = z.infer<typeof educationSchema>
+type EducationFormValues = z.infer<typeof educationSchema>;
 
 type EducationState = {
     educationList: EducationFormValues[];
     isDialogOpen: boolean;
-}
+};
 
-type EducationAction = 
-    | { type: 'ADD_EDUCATION'; payload: EducationFormValues }
-    | { type: 'REMOVE_EDUCATION'; payload: number }
-    | { type: 'TOGGLE_DIALOG' }
-    | { type: 'CLEAR_ALL_EDUCATION' };
+type EducationAction =
+    | { type: "ADD_EDUCATION"; payload: EducationFormValues }
+    | { type: "REMOVE_EDUCATION"; payload: number }
+    | { type: "TOGGLE_DIALOG" }
+    | { type: "CLEAR_ALL_EDUCATION" };
 
 function Education() {
+    const { setEducation } = useMainStore();
     const [educationState, dispatch] = React.useReducer(
         (state: EducationState, action: EducationAction) => {
             switch (action.type) {
-                case 'ADD_EDUCATION':
+                case "ADD_EDUCATION":
                     return {
                         ...state,
                         educationList: [...state.educationList, action.payload],
                     };
-                case 'REMOVE_EDUCATION':
+                case "REMOVE_EDUCATION":
                     return {
                         ...state,
-                        educationList: state.educationList.filter((_, i) => i !== action.payload),
+                        educationList: state.educationList.filter(
+                            (_, i) => i !== action.payload
+                        ),
                     };
-                case 'TOGGLE_DIALOG':
+                case "TOGGLE_DIALOG":
                     return {
                         ...state,
                         isDialogOpen: !state.isDialogOpen,
                     };
-                case 'CLEAR_ALL_EDUCATION':
+                case "CLEAR_ALL_EDUCATION":
                     return {
                         ...state,
                         educationList: [],
@@ -88,7 +99,7 @@ function Education() {
             educationList: [],
             isDialogOpen: false,
         }
-    )
+    );
 
     const form = useForm<EducationFormValues>({
         resolver: zodResolver(educationSchema),
@@ -101,44 +112,62 @@ function Education() {
             startDate: undefined,
             endDate: undefined,
             ongoing: false,
-        }
-    })
+        },
+    });
 
     React.useEffect(() => {
-        const loadExistingData = async () => {
-            try {
-                const existingData = await getEducation();
-                if (existingData?.education) {
-                    existingData.education.forEach(edu => {
-                        dispatch({ 
-                            type: 'ADD_EDUCATION', 
-                            payload: edu as EducationFormValues 
+        const loadStoreData = () => {
+            const currentEducation = useMainStore.getState().educations;
+            console.log("Current Education from Store:", currentEducation);
+    
+            if (currentEducation) {
+                if (Array.isArray(currentEducation)) {
+                    currentEducation.forEach(edu => {
+                        dispatch({
+                            type: 'ADD_EDUCATION',
+                            payload: {
+                                institutionName: edu.institutionName,
+                                website: edu.website,
+                                areaOfStudy: edu.areaOfStudy,
+                                typeOfStudy: edu.typeOfStudy,
+                                description: edu.description,
+                                startDate: edu.startDate ? new Date(edu.startDate) : undefined,
+                                endDate: edu.endDate ? new Date(edu.endDate) : undefined,
+                                ongoing: edu.ongoing,
+                            }
                         });
                     });
                 }
-            } catch (error) {
-                console.error('Error loading existing data:', error);
             }
         };
-
-        loadExistingData();
+        loadStoreData();
     }, []);
+    
+    
 
-    const onSubmit = async (_data: EducationFormValues) => {
+    const onSubmit = async () => {
         try {
-            await saveEducation(educationState.educationList);
+            const formattedEducation = educationState.educationList.map((edu) => ({
+                institutionName: edu.institutionName,
+                website: edu.website || "",
+                areaOfStudy: edu.areaOfStudy,
+                typeOfStudy: edu.typeOfStudy,
+                description: edu.description || "",
+                startDate: edu.startDate ? edu.startDate.toISOString() : "",
+                endDate: edu.endDate ? edu.endDate.toISOString() : "",
+                ongoing: edu.ongoing,
+            }));
+            setEducation(formattedEducation);
             toast.success("Education saved successfully!");
         } catch (error) {
-            console.error('Error saving education:', error);
+            console.error("Error saving education:", error);
             toast.error("Failed to save education");
         }
-    }
+    };
 
-    const handleClearForm = async () => {
+    const handleClearForm = () => {
         try {
-            // Clear IndexedDB data
-            await clearEducation();
-            // Reset form to empty values
+            setEducation([]);
             form.reset({
                 institutionName: '',
                 website: '',
@@ -149,10 +178,7 @@ function Education() {
                 endDate: undefined,
                 ongoing: false
             });
-            
-            // Clear all education from state
             dispatch({ type: 'CLEAR_ALL_EDUCATION' });
-            
             toast.success("Form cleared successfully!");
         } catch (error) {
             console.error('Error clearing form data:', error);
@@ -161,22 +187,22 @@ function Education() {
     }
 
     const handleAddEducation = () => {
-        const values = form.getValues()
+        const values = form.getValues();
         if (values.institutionName && values.areaOfStudy && values.startDate) {
-            dispatch({ type: 'ADD_EDUCATION', payload: values })
-            form.reset()
+            dispatch({ type: "ADD_EDUCATION", payload: values });
+            form.reset();
         } else {
-            toast.error("Please fill in all required fields")
+            toast.error("Please fill in all required fields");
         }
-    }
+    };
 
     const handleRemoveEducation = (index: number) => {
-        dispatch({ type: 'REMOVE_EDUCATION', payload: index })
-    }
+        dispatch({ type: "REMOVE_EDUCATION", payload: index });
+    };
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-4">   
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-4">
                 <div className="flex flex-col justify-start items-start gap-5">
                     <TypographyH3>Education</TypographyH3>
 
@@ -188,8 +214,14 @@ function Education() {
                                 variant="education"
                                 institutionName={edu.institutionName}
                                 areaOfStudy={edu.areaOfStudy}
-                                startDate={format(edu.startDate, "MMM yyyy")}
-                                endDate={edu.ongoing ? "Present" : edu.endDate ? format(edu.endDate, "MMM yyyy") : undefined}
+                                startDate={edu.startDate ? format(edu.startDate, "MMM yyyy") : ""}
+                                endDate={
+                                    edu.ongoing
+                                        ? "Present"
+                                        : edu.endDate
+                                            ? format(edu.endDate, "MMM yyyy")
+                                            : undefined
+                                }
                                 degree={edu.typeOfStudy}
                                 description={edu.description}
                                 onRemove={() => handleRemoveEducation(index)}
@@ -197,10 +229,10 @@ function Education() {
                         ))}
                         {educationState.educationList.length > 2 && (
                             <div className="w-full flex justify-end items-center gap-4">
-                                <Button 
+                                <Button
                                     type="button"
                                     variant="link"
-                                    onClick={() => dispatch({ type: 'TOGGLE_DIALOG' })}
+                                    onClick={() => dispatch({ type: "TOGGLE_DIALOG" })}
                                 >
                                     Show All ({educationState.educationList.length})
                                 </Button>
@@ -209,7 +241,10 @@ function Education() {
                     </div>
 
                     {/* Dialog for showing all education entries */}
-                    <Dialog open={educationState.isDialogOpen} onOpenChange={() => dispatch({ type: 'TOGGLE_DIALOG' })}>
+                    <Dialog
+                        open={educationState.isDialogOpen}
+                        onOpenChange={() => dispatch({ type: "TOGGLE_DIALOG" })}
+                    >
                         <DialogContent>
                             <DialogHeader>
                                 <DialogTitle>All Education</DialogTitle>
@@ -221,19 +256,24 @@ function Education() {
                                         variant="education"
                                         institutionName={edu.institutionName}
                                         areaOfStudy={edu.areaOfStudy}
-                                        startDate={format(edu.startDate, "MMM yyyy")}
-                                        endDate={edu.ongoing ? "Present" : edu.endDate ? format(edu.endDate, "MMM yyyy") : undefined}
+                                        startDate={edu.startDate ? format(edu.startDate, "MMM yyyy") : ""}
+                                        endDate={
+                                            edu.ongoing
+                                                ? "Present"
+                                                : edu.endDate
+                                                    ? format(edu.endDate, "MMM yyyy")
+                                                    : undefined
+                                        }
                                         degree={edu.typeOfStudy}
                                         description={edu.description}
                                         onRemove={() => handleRemoveEducation(index)}
                                     />
-                                ))}
-                            </div>
+                                ))}                            </div>
                             {educationState.educationList.length > 0 && (
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => dispatch({ type: 'CLEAR_ALL_EDUCATION' })}
+                                    onClick={() => dispatch({ type: "CLEAR_ALL_EDUCATION" })}
                                     className="text-red-500 hover:text-red-700"
                                 >
                                     Clear All Education
@@ -264,7 +304,10 @@ function Education() {
                                 <FormItem>
                                     <FormLabel>Institution Website</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="https://institution-website.com" {...field} />
+                                        <Input
+                                            placeholder="https://institution-website.com"
+                                            {...field}
+                                        />
                                     </FormControl>
                                     <FormMessage className="text-red-600 font-inter font-normal text-xs" />
                                 </FormItem>
@@ -309,7 +352,7 @@ function Education() {
                             <FormItem className="w-full">
                                 <FormLabel>Description</FormLabel>
                                 <FormControl>
-                                    <Textarea 
+                                    <Textarea
                                         placeholder="Describe your academic achievements, relevant coursework, etc..."
                                         className="min-h-[12rem] max-h-[18rem] hide-scrollbar"
                                         {...field}
@@ -400,7 +443,7 @@ function Education() {
                             )}
                         />
                     </div>
-                    
+
                     <FormField
                         control={form.control}
                         name="ongoing"
@@ -418,9 +461,9 @@ function Education() {
                     />
 
                     <div className="w-full flex justify-start items-center gap-4">
-                        <Button 
-                            type="button" 
-                            variant="outline" 
+                        <Button
+                            type="button"
+                            variant="outline"
                             className="px-4 w-fit flex items-center justify-center"
                             onClick={handleAddEducation}
                         >
@@ -430,7 +473,11 @@ function Education() {
                     </div>
                 </div>
                 <div className="w-full flex justify-end items-center gap-4">
-                    <Button type="submit" variant="secondary" className="px-4 w-fit flex items-center justify-center">
+                    <Button
+                        type="submit"
+                        variant="secondary"
+                        className="px-4 w-fit flex items-center justify-center"
+                    >
                         Save Education
                     </Button>
                     <Button
@@ -446,7 +493,7 @@ function Education() {
                 </div>
             </form>
         </Form>
-    )
+    );
 }
 
-export default Education
+export default Education;

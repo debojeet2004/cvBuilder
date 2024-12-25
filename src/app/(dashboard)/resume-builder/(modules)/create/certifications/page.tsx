@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils'
 import { CustomCard } from '../_components/cardItem'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from 'sonner'
-import { saveCertifications, getCertifications, clearCertifications } from './lib/certificationsDB';
+import useMainStore from '../../store/store'
 
 const certificationsSchema = z.object({
     name: z.string().optional(),
@@ -41,7 +41,8 @@ type CertificationAction =
     | { type: 'CLEAR_ALL_CERTIFICATIONS' };
 
 function Certifications() {
-    const [certState, dispatch] = React.useReducer(
+    const { setCertificates } = useMainStore();
+    const [certificateState, dispatch] = React.useReducer(
         (state: CertificationState, action: CertificationAction) => {
             switch (action.type) {
                 case 'ADD_CERTIFICATION':
@@ -86,34 +87,52 @@ function Certifications() {
     })
 
     React.useEffect(() => {
-        const loadExistingData = async () => {
-            try {
-                const existingData = await getCertifications();
-                if (existingData?.certifications) {
-                    existingData.certifications.forEach(cert => {
-                        dispatch({ 
-                            type: 'ADD_CERTIFICATION', 
-                            payload: cert 
+        const loadStoreData = () => {
+            const currentCertificates = useMainStore.getState().certificates;
+            console.log("Current Certificates:", currentCertificates);
+    
+            if (currentCertificates) {
+                if (Array.isArray(currentCertificates)) {
+                    currentCertificates.forEach(certificate => {
+                        dispatch({
+                            type: 'ADD_CERTIFICATION',
+                            payload: {
+                                name: certificate.name,
+                                issuedBy: certificate.issuedBy,
+                                date: certificate.date ? new Date(certificate.date) : undefined,
+                                website: certificate.website,
+                                description: certificate.description
+                            }
                         });
                     });
                 }
-            } catch (error) {
-                console.error('Error loading existing data:', error);
             }
         };
-
-        loadExistingData();
+    
+        loadStoreData();
     }, []);
+    
 
-    const onSubmit = async (_data: CertificationsFormValues) => {
+    const onSubmit = async () => {
         try {
-            await saveCertifications(certState.certifications);
+            const formattedCertificates = certificateState.certifications.map(certificate => ({
+                name: certificate.name || '',
+                issuedBy: certificate.issuedBy || '',
+                date: certificate.date ? certificate.date.toISOString() : '',
+                website: certificate.website || '',
+                description: certificate.description || ''
+            }));
+    
+            setCertificates(formattedCertificates);
+            
             toast.success("Certifications saved successfully!");
         } catch (error) {
             console.error('Error saving certifications:', error);
             toast.error("Failed to save certifications");
         }
     }
+    
+    
 
     const handleAddCertification = () => {
         const values = form.getValues()
@@ -129,10 +148,11 @@ function Certifications() {
         dispatch({ type: 'REMOVE_CERTIFICATION', payload: index })
     }
 
-    const handleClearForm = async () => {
+    const handleClearForm = () => {
         try {
-            // Clear IndexedDB data
-            await clearCertifications();
+            // Clear Zustand store
+            setCertificates([]);
+            
             // Reset form to empty values
             form.reset({
                 name: '',
@@ -158,7 +178,7 @@ function Certifications() {
                 <div className="space-y-4">
                     <TypographyH3>Certifications</TypographyH3>
                     <div className="space-y-4">
-                        {certState.certifications.slice(0, 2).map((cert, index) => (
+                        {certificateState.certifications.slice(0, 2).map((cert, index) => (
                             <CustomCard
                                 key={index}
                                 variant="certification"
@@ -169,26 +189,26 @@ function Certifications() {
                                 onRemove={() => handleRemoveCertification(index)}
                             />
                         ))}
-                        {certState.certifications.length > 2 && (
+                        {certificateState.certifications.length > 2 && (
                             <div className="w-full flex justify-end items-center gap-4">
                                 <Button 
                                     type="button"
                                     variant="link"
                                     onClick={() => dispatch({ type: 'TOGGLE_DIALOG' })}
                                 >
-                                    Show All ({certState.certifications.length})
+                                    Show All ({certificateState.certifications.length})
                                 </Button>
                             </div>
                         )}
                     </div>
 
-                    <Dialog open={certState.isDialogOpen} onOpenChange={() => dispatch({ type: 'TOGGLE_DIALOG' })}>
+                    <Dialog open={certificateState.isDialogOpen} onOpenChange={() => dispatch({ type: 'TOGGLE_DIALOG' })}>
                         <DialogContent>
                             <DialogHeader>
                                 <DialogTitle>All Certifications</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                                {certState.certifications.map((cert, index) => (
+                                {certificateState.certifications.map((cert, index) => (
                                     <CustomCard
                                         key={index}
                                         variant="certification"
@@ -200,7 +220,7 @@ function Certifications() {
                                     />
                                 ))}
                             </div>
-                            {certState.certifications.length > 0 && (
+                            {certificateState.certifications.length > 0 && (
                                 <Button
                                     type="button"
                                     variant="outline"

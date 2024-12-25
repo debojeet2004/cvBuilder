@@ -5,11 +5,11 @@ export interface SocialLink {
 
 export interface PersonalInfo {
     name: string;
-    age: number;
-    gender: string;
-    email: string;
+    bio: string;
     phone: string;
-    address: string;
+    location: string;
+    email: string;
+    website: string;
     socialLinks: SocialLink[];
     summary: string;
 }
@@ -34,19 +34,15 @@ export interface Education {
     endDate: string;
 }
 
-export interface Skill {
-    skillName: string;
-    skillLevel: 'beginner' | 'intermediate' | 'expert';
-}
-
-export interface Language {
-    language: string;
-    proficiency: 'native' | 'fluent' | 'intermediate' | 'basic';
-}
-
 export interface SkillsAndLanguages {
-    skills: Skill[];
-    languages: Language[];
+    skills: {
+        skillName: string;
+        skillLevel:string;
+    }[];
+    languages: {
+        language: string;
+        proficiency: string;
+    }[];
 }
 
 export interface Project {

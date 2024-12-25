@@ -9,8 +9,6 @@ import { CalendarIcon, PlusIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from 'sonner'
-
-// UI Components imports
 import {
     Form,
     FormControl,
@@ -31,33 +29,34 @@ import {
 } from "@/components/ui/popover"
 import { TypographyH3 } from '@/components/ui/Typography'
 import { CustomCard } from '../_components/cardItem'
+import useMainStore from '../../store/store'
 
-// Schema definition
 const experienceSchema = z.object({
-    experience: z.array(z.object({
-        company: z.string().min(1, "Company name is required"),
-        position: z.string().min(1, "Position is required"),
-        description: z.string().min(1, "Description is required"),
-        startDate: z.date({ required_error: "Start date is required" }),
-        endDate: z.date({ invalid_type_error: "Please select a valid end date" }).optional().nullable(),
-        currentlyWorking: z.boolean().default(false),
-    }))
-})
+    company: z.string().optional(),
+    position: z.string().optional(),
+    description: z.string().optional(),
+    startDate: z.date({ required_error: "Start date is required" }).optional(),
+    endDate: z
+        .date({ invalid_type_error: "Please select a valid end date" })
+        .optional()
+        .nullable(),
+    currentlyWorking: z.boolean().default(false),
+});
 
 type ExperienceFormValues = z.infer<typeof experienceSchema>
 
 type ExperienceState = {
-    experienceList: ExperienceFormValues['experience'];
+    experienceList: ExperienceFormValues[];
     isDialogOpen: boolean;
 }
-
-type ExperienceAction = 
-    | { type: 'ADD_EXPERIENCE'; payload: ExperienceFormValues['experience'][0] }
+type ExperienceAction =
+    | { type: 'ADD_EXPERIENCE'; payload: ExperienceFormValues }
     | { type: 'REMOVE_EXPERIENCE'; payload: number }
     | { type: 'TOGGLE_DIALOG' }
     | { type: 'CLEAR_ALL_EXPERIENCE' };
 
 function Experience() {
+    const { setExperience } = useMainStore();
     const [experienceState, dispatch] = React.useReducer(
         (state: ExperienceState, action: ExperienceAction) => {
             switch (action.type) {
@@ -94,24 +93,82 @@ function Experience() {
     const form = useForm<ExperienceFormValues>({
         resolver: zodResolver(experienceSchema),
         defaultValues: {
-            experience: [{
-                company: "",
-                position: "",
-                description: "",
-                startDate: undefined,
-                endDate: undefined,
-                currentlyWorking: false,
-            }]
+            company: "",
+            position: "",
+            description: "",
+            startDate: undefined,
+            endDate: undefined,
+            currentlyWorking: false,
         }
     })
 
-    function onSubmit(data: ExperienceFormValues) {
-        console.log(data)
-        // Handle form submission
-    }
+    React.useEffect(() => {
+        const loadStoreData = () => {
+            const currentExperiences = useMainStore.getState().experiences;
+            console.log("Current Experiences:", currentExperiences);
+    
+            if (currentExperiences) {
+                if (Array.isArray(currentExperiences)) {
+                    currentExperiences.forEach(experience => {
+                        dispatch({
+                            type: 'ADD_EXPERIENCE',
+                            payload: {
+                                company: experience.companyName,
+                                position: experience.position,
+                                description: experience.description,
+                                startDate: experience.startDate ? new Date(experience.startDate) : undefined,
+                                endDate: experience.endDate ? new Date(experience.endDate) : undefined,
+                                currentlyWorking: experience.currentlyWorking
+                            }
+                        });
+                    });
+                }
+            }
+        };
+    
+        loadStoreData();
+    }, []);
+    
 
+    const onSubmit = async () => {
+        try {
+            const formattedExperiences = experienceState.experienceList.map(exp => ({
+                companyName: exp.company || '',
+                position: exp.position || '',
+                description: exp.description || '',
+                startDate: exp.startDate ? exp.startDate.toISOString() : '',
+                endDate: exp.endDate ? exp.endDate.toISOString() : '',
+                currentlyWorking: exp.currentlyWorking
+            }));
+            setExperience(formattedExperiences);
+            toast.success("Experience saved successfully!");
+        } catch (error) {
+            console.error('Error saving experience:', error);
+            toast.error("Failed to save experience");
+        }
+    };
+
+    const handleClearForm = () => {
+        try {
+            setExperience([]);
+            form.reset({
+                company: '',
+                position: '',
+                description: '',
+                startDate: undefined,
+                endDate: undefined,
+                currentlyWorking: false
+            });
+            dispatch({ type: 'CLEAR_ALL_EXPERIENCE' });
+            toast.success("Form cleared successfully!");
+        } catch (error) {
+            console.error('Error clearing form data:', error);
+            toast.error("Failed to clear form data");
+        }
+    };
+    
     const handleAddExperience = () => {
-        const values = form.getValues().experience[0]
+        const values = form.getValues()
         if (values.company && values.position && values.startDate) {
             dispatch({ type: 'ADD_EXPERIENCE', payload: values })
             form.reset()
@@ -126,7 +183,7 @@ function Experience() {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-4">   
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-4">
                 <div className="flex flex-col justify-start items-start gap-5">
                     <TypographyH3>Experience</TypographyH3>
 
@@ -136,17 +193,18 @@ function Experience() {
                             <CustomCard
                                 key={index}
                                 variant="experience"
-                                companyName={exp.company}
-                                position={exp.position}
-                                startDate={format(exp.startDate, "MMM yyyy")}
-                                endDate={exp.currentlyWorking ? "Present" : exp.endDate ? format(exp.endDate, "MMM yyyy") : undefined}
+                                companyName={exp.company || ""}
+                                position={exp.position || ""}
+                                startDate={exp.startDate ? format(new Date(exp.startDate), "MMM yyyy") : ""}
+
+                                endDate={exp.currentlyWorking ? "Present" : exp.endDate ? format(new Date(exp.endDate), "MMM yyyy") : ""}
                                 description={exp.description}
                                 onRemove={() => handleRemoveExperience(index)}
                             />
                         ))}
                         {experienceState.experienceList.length > 2 && (
                             <div className="w-full flex justify-end items-center gap-4">
-                                <Button 
+                                <Button
                                     type="button"
                                     variant="link"
                                     onClick={() => dispatch({ type: 'TOGGLE_DIALOG' })}
@@ -170,8 +228,9 @@ function Experience() {
                                         variant="experience"
                                         companyName={exp.company}
                                         position={exp.position}
-                                        startDate={format(exp.startDate, "MMM yyyy")}
-                                        endDate={exp.currentlyWorking ? "Present" : exp.endDate ? format(exp.endDate, "MMM yyyy") : undefined}
+                                        startDate={exp.startDate ? format(new Date(exp.startDate), "MMM yyyy") : ""}
+
+                                        endDate={exp.currentlyWorking ? "Present" : exp.endDate ? format(new Date(exp.endDate), "MMM yyyy") : ""}
                                         description={exp.description}
                                         onRemove={() => handleRemoveExperience(index)}
                                     />
@@ -193,7 +252,7 @@ function Experience() {
                     <div className="grid grid-cols-2 gap-4 w-full">
                         <FormField
                             control={form.control}
-                            name="experience.0.company"
+                            name="company"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Company *</FormLabel>
@@ -207,7 +266,7 @@ function Experience() {
 
                         <FormField
                             control={form.control}
-                            name="experience.0.position"
+                            name="position"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Position *</FormLabel>
@@ -222,12 +281,12 @@ function Experience() {
 
                     <FormField
                         control={form.control}
-                        name="experience.0.description"
+                        name="description"
                         render={({ field }) => (
                             <FormItem className="w-full">
                                 <FormLabel>Description</FormLabel>
                                 <FormControl>
-                                    <Textarea 
+                                    <Textarea
                                         placeholder="Describe your role, responsibilities, and achievements..."
                                         className="min-h-[12rem] max-h-[18rem] hide-scrollbar"
                                         {...field}
@@ -241,7 +300,7 @@ function Experience() {
                     <div className="grid grid-cols-2 gap-4 w-full">
                         <FormField
                             control={form.control}
-                            name="experience.0.startDate"
+                            name="startDate"
                             render={({ field }) => (
                                 <FormItem className="flex flex-col">
                                     <FormLabel>Start Date *</FormLabel>
@@ -280,49 +339,49 @@ function Experience() {
 
                         <FormField
                             control={form.control}
-                            name="experience.0.endDate"
+                            name="endDate"
                             render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                                <FormLabel>End Date *</FormLabel>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <FormControl>
-                                            <Button
-                                                variant={"outline"}
-                                                className={cn(
-                                                    "w-full pl-3 text-left font-normal",
-                                                    !field.value && "text-muted-foreground"
-                                                )}
-                                                disabled={form.watch("experience.0.currentlyWorking")}
-                                            >
-                                                {field.value ? (
-                                                    format(field.value, "PPP")
-                                                ) : (
-                                                    <span>Pick a date</span>
-                                                )}
-                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                            </Button>
-                                        </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar
-                                            mode="single"
-                                            selected={field.value || undefined}
-                                            onSelect={field.onChange}
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                                <FormMessage className="text-red-600 font-inter font-normal text-xs" />
-                            </FormItem>
-                        )}
-                    />
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>End Date *</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className={cn(
+                                                        "w-full pl-3 text-left font-normal",
+                                                        !field.value && "text-muted-foreground"
+                                                    )}
+                                                    disabled={form.watch("currentlyWorking")}
+                                                >
+                                                    {field.value ? (
+                                                        format(field.value, "PPP")
+                                                    ) : (
+                                                        <span>Pick a date</span>
+                                                    )}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={field.value || undefined}
+                                                onSelect={field.onChange}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage className="text-red-600 font-inter font-normal text-xs" />
+                                </FormItem>
+                            )}
+                        />
                     </div>
 
-                
+
                     <FormField
                         control={form.control}
-                        name="experience.0.currentlyWorking"
+                        name="currentlyWorking"
                         render={({ field }) => (
                             <FormItem className="flex flex-row items-end space-x-3 space-y-0">
                                 <FormControl>
@@ -336,9 +395,9 @@ function Experience() {
                         )}
                     />
                     <div className="w-full flex justify-start items-center gap-4">
-                        <Button 
-                            type="button" 
-                            variant="outline" 
+                        <Button
+                            type="button"
+                            variant="outline"
                             className="px-4 w-fit flex items-center justify-center"
                             onClick={handleAddExperience}
                         >
@@ -346,28 +405,27 @@ function Experience() {
                             Add Experience
                         </Button>
                     </div>
-                </div> 
-                
+                </div>
 
-                
+
+
                 <div className="w-full flex justify-end items-center gap-4">
                     <Button type="submit" variant="secondary" className="px-4 w-fit flex items-center justify-center">
                         Save Experience
-                    </Button> 
+                    </Button>
                     <Button
                         type="button"
                         size="default"
                         variant="destructive"
                         // disabled={isLoading}
                         className="min-w-[6rem]"
-                        onClick={() => form.reset()}
+                        onClick={handleClearForm}
                     >
                         Clear
                     </Button>
                 </div>
             </form>
         </Form>
-    )
-}
 
-export default Experience   
+    )}
+export default Experience

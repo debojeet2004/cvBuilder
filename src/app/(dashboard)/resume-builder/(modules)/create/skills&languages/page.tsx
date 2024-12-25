@@ -1,5 +1,4 @@
 "use client"
-
 import React from 'react'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -13,39 +12,32 @@ import { PlusIcon } from "lucide-react"
 import BadgeItem from '../_components/BadgeItem'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from 'sonner'
+import useMainStore from '../../store/store'
 
 const skillSchema = z.object({
     skills: z.array(z.object({
-        name: z.string()
-            .min(2, "Skill name must be at least 2 characters")
-            .max(50, "Skill name must not exceed 50 characters"),
-        level: z.enum(['beginner', 'intermediate', 'expert'], {
-            required_error: "Experience level is required",
-            invalid_type_error: "Please select a valid skill level"
-        })
+        name: z.string(),
+        level: z.string().optional()
     })),
     languages: z.array(z.object({
-        name: z.string().min(2, { message: "Language name must be at least 2 characters" }),
-        proficiency: z.enum(['native', 'fluent', 'intermediate', 'basic'], {
-            required_error: "Proficiency level is required",
-            invalid_type_error: "Please select a valid proficiency level"
-        })
+        name: z.string(),
+        proficiency: z.string().optional()
     }))
 })
 
 type SkillFormValues = z.infer<typeof skillSchema>
 
 type SkillState = {
-    skills: Array<{name: string, level: 'beginner' | 'intermediate' | 'expert' | undefined}>;
-    languages: Array<{name: string, proficiency: 'native' | 'fluent' | 'intermediate' | 'basic' | undefined}>;
+    skills: Array<{name: string, level: string}>;
+    languages: Array<{name: string, proficiency: string}>;
     isSkillDialogOpen: boolean;
     isLanguageDialogOpen: boolean;
 }
 
 type SkillAction = 
-    | { type: 'ADD_SKILL'; payload: {name: string, level: 'beginner' | 'intermediate' | 'expert' | undefined} }
+    | { type: 'ADD_SKILL'; payload: {name: string, level:string} }
     | { type: 'REMOVE_SKILL'; payload: number }
-    | { type: 'ADD_LANGUAGE'; payload: {name: string, proficiency: 'native' | 'fluent' | 'intermediate' | 'basic' | undefined} }
+    | { type: 'ADD_LANGUAGE'; payload: {name: string, proficiency: string} }
     | { type: 'REMOVE_LANGUAGE'; payload: number }
     | { type: 'TOGGLE_SKILL_DIALOG' }
     | { type: 'TOGGLE_LANGUAGE_DIALOG' }
@@ -53,6 +45,7 @@ type SkillAction =
     | { type: 'CLEAR_ALL_LANGUAGES' };
 
 function Skills() {
+    const { setSkillsandLanguages } = useMainStore();
     const [skillState, dispatch] = React.useReducer(
         (state: SkillState, action: SkillAction) => {
             switch (action.type) {
@@ -122,10 +115,110 @@ function Skills() {
         }
     })
 
-    const onSubmit = (data: SkillFormValues) => {
-        console.log(data)
-    }
+    React.useEffect(() => {
+        const loadStoreData = () => {
+            // Type assertion or optional chaining with type guard
+            const currentSkillsAndLanguages = useMainStore.getState().skillsAndLanguages;
+            
+            console.log("Current Skills and Languages:", currentSkillsAndLanguages);
 
+            // Type-safe check
+            if (currentSkillsAndLanguages) {
+                // Check and process skills
+                if (Array.isArray(currentSkillsAndLanguages.skills)) {
+                    currentSkillsAndLanguages.skills.forEach(skill => {
+                        dispatch({
+                            type: 'ADD_SKILL',
+                            payload: {
+                                name: skill.skillName,
+                                level: skill.skillLevel
+                            }
+                        });
+                    });
+                }
+
+                // Check and process languages
+                if (Array.isArray(currentSkillsAndLanguages.languages)) {
+                    currentSkillsAndLanguages.languages.forEach(language => {
+                        dispatch({
+                            type: 'ADD_LANGUAGE',
+                            payload: {
+                                name: language.language,
+                                proficiency: language.proficiency
+                            }
+                        });
+                    });
+                }
+            }
+        };
+        
+        loadStoreData();
+    }, []);
+
+    const onSubmit = () => {
+        try {
+            // Validate that there are skills or languages to save
+            if (skillState.skills.length === 0 && skillState.languages.length === 0) {
+                toast.error("Please add at least one skill or language");
+                return;
+            }
+    
+            // Update Zustand store with skills and languages
+            setSkillsandLanguages({
+                skills: skillState.skills.map(skill => ({
+                    skillName: skill.name,
+                    skillLevel: skill.level || 'beginner'
+                })),
+                languages: skillState.languages.map(language => ({
+                    language: language.name,
+                    proficiency: language.proficiency || 'basic'
+                }))
+            });
+    
+            toast.success("Skills and Languages saved successfully!");
+            
+            // Log the current state for verification
+            console.log('Current Skills and Languages State page.tsx :', 
+                useMainStore.getState().skillsAndLanguages
+            );
+    
+        } catch (error) {
+            console.error('Error saving skills and languages:', error);
+            toast.error("Failed to save skills and languages");
+        }
+    };
+    
+
+    const handleClearForm = () => {
+        try {
+            // Clear Zustand store with correct structure
+            setSkillsandLanguages({
+                skills: [],
+                languages: []
+            });
+    
+            // Reset form
+            form.reset({
+                skills: [{
+                    name: '', 
+                    level: undefined,
+                }],
+                languages: [{
+                    name: '',
+                    proficiency: undefined,
+                }]
+            });
+    
+            // Clear local state
+            dispatch({ type: 'CLEAR_ALL_SKILLS' });
+            dispatch({ type: 'CLEAR_ALL_LANGUAGES' });
+    
+            toast.success("Form cleared successfully!");
+        } catch (error) {
+            console.error('Error clearing form:', error);
+            toast.error("Failed to clear form");
+        }
+    };
     const handleAddSkill = () => {
         const skillName = form.getValues('skills.0.name')
         const skillLevel = form.getValues('skills.0.level')
@@ -133,12 +226,11 @@ function Skills() {
             dispatch({ type: 'ADD_SKILL', payload: { name: skillName, level: skillLevel } })
             // will reset the form fields after adding
             form.setValue('skills.0.name', '')
-            form.setValue('skills.0.level', '' as any)
+            form.setValue('skills.0.level', '')
         }else {
             toast.error("Please fill in all fields")
         }
     }
-
     const handleRemoveSkill = (index: number) => {
         dispatch({ type: 'REMOVE_SKILL', payload: index })
     }
@@ -149,7 +241,7 @@ function Skills() {
         if (languageName && languageProficiency) {
             dispatch({ type: 'ADD_LANGUAGE', payload: { name: languageName, proficiency: languageProficiency } })
             form.setValue('languages.0.name', '')
-            form.setValue('languages.0.proficiency', '' as any)
+            form.setValue('languages.0.proficiency', '')
         } else {
             toast.error("Please fill in all language fields")
         }
@@ -385,7 +477,7 @@ function Skills() {
 
                 <div className="w-full flex justify-end items-center gap-4">
                     <Button 
-                        type="submit" 
+                        type='submit'
                         variant="secondary" 
                         className="px-4 w-fit flex items-center justify-center"
                     >
@@ -396,8 +488,7 @@ function Skills() {
                         size="default"
                         variant="destructive"
                         className="min-w-[6rem]"
-                        onClick={() => form.reset()}
-                    >
+                        onClick={handleClearForm}                    >
                         Clear Form
                     </Button>
                 </div>

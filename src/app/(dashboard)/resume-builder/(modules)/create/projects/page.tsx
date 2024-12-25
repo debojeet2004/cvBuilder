@@ -10,8 +10,6 @@ import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from 'sonner'
 import { CustomCard } from '../_components/cardItem'
-
-// UI Components imports
 import {
     Form,
     FormControl,
@@ -31,33 +29,32 @@ import {
 } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
 import { TypographyH3 } from '@/components/ui/Typography'
-
+import useMainStore from '../../store/store'
 
 const projectSchema = z.object({
-    projects: z.array(z.object({
-        name: z.string().min(1, "Project name is required"),
-        website: z.string().url({ message: "Invalid URL" }).optional().or(z.literal("")),
-        description: z.string().min(1, "Description is required"),
-        startDate: z.date({ required_error: "Start date is required" }),
-        endDate: z.date({ invalid_type_error: "Please select a valid end date" }).optional().nullable(),
-        ongoing: z.boolean().default(false),
-    }))
-})
+    projectName: z.string().optional(),
+    website: z.string().url({ message: "Invalid URL" }).optional().or(z.literal("")),
+    description: z.string().optional(),
+    startDate: z.date({ required_error: "Start date is required" }).optional(),
+    endDate: z.date({ invalid_type_error: "Please select a valid end date" }).optional().nullable(),
+    ongoing: z.boolean().default(false),
+});
+
 
 type ProjectFormValues = z.infer<typeof projectSchema>
 
 type ProjectState = {
-    projectList: ProjectFormValues['projects'];
+    projectList: ProjectFormValues[];
     isDialogOpen: boolean;
 }
-
 type ProjectAction = 
-    | { type: 'ADD_PROJECT'; payload: ProjectFormValues['projects'][0] }
+    | { type: 'ADD_PROJECT'; payload: ProjectFormValues }
     | { type: 'REMOVE_PROJECT'; payload: number }
     | { type: 'TOGGLE_DIALOG' }
     | { type: 'CLEAR_ALL_PROJECTS' };
 
 function Projects() {
+    const { setProjects } = useMainStore();
     const [projectState, dispatch] = React.useReducer(
         (state: ProjectState, action: ProjectAction) => {
             switch (action.type) {
@@ -94,25 +91,83 @@ function Projects() {
     const form = useForm<ProjectFormValues>({
         resolver: zodResolver(projectSchema),
         defaultValues: {
-            projects: [{
-                name: "",
+                projectName: "",
                 website: "",
                 description: "",
                 startDate: undefined,
                 endDate: undefined,
                 ongoing: false,
-            }]
         }
     })
 
-    const onSubmit = (data: ProjectFormValues) => {
-        console.log(data)
-        // Handle form submission
-    }
+    React.useEffect(() => {
+        const loadStoreData = () => {
+            const currentProjects = useMainStore.getState().projects;
+            console.log("Current Projects:", currentProjects);
+    
+            if (currentProjects) {
+                if (Array.isArray(currentProjects)) {
+                    currentProjects.forEach(project => {
+                        dispatch({
+                            type: 'ADD_PROJECT',
+                            payload: {
+                                projectName: project.projectName,
+                                website: project.website,
+                                description: project.description,
+                                startDate: project.startDate ? new Date(project.startDate) : undefined,
+                                endDate: project.endDate ? new Date(project.endDate) : undefined,
+                                ongoing: project.ongoing
+                            }
+                        });
+                    });                }
+            }
+        };
+    
+        loadStoreData();
+    }, []);
+    
+
+    const onSubmit = async () => {
+        try {
+            const formattedProjects = projectState.projectList.map(project => ({
+                projectName: project.projectName || '',
+                website: project.website || '',
+                description: project.description || '',
+                startDate: project.startDate ? project.startDate.toISOString() : '',
+                endDate: project.endDate ? project.endDate.toISOString() : '',
+                ongoing: project.ongoing
+            }));
+            setProjects(formattedProjects);
+            toast.success("Projects saved successfully!");
+        } catch (error) {
+            console.error('Error saving projects:', error);
+            toast.error("Failed to save projects");
+        }
+    };
+    
+    const handleClearForm = () => {
+        try {
+            setProjects([]);
+            form.reset({
+                projectName: '',
+                website: '',
+                description: '',
+                startDate: undefined,
+                endDate: undefined,
+                ongoing: false
+            });
+            dispatch({ type: 'CLEAR_ALL_PROJECTS' });
+            
+            toast.success("Form cleared successfully!");
+        } catch (error) {
+            console.error('Error clearing form data:', error);
+            toast.error("Failed to clear form data");
+        }
+    };    
 
     const handleAddProject = () => {
-        const values = form.getValues().projects[0]
-        if (values.name && values.startDate) {
+        const values = form.getValues()
+        if (values.projectName && values.startDate) {
             dispatch({ type: 'ADD_PROJECT', payload: values })
             form.reset()
         } else {
@@ -136,8 +191,8 @@ function Projects() {
                             <CustomCard
                                 key={index}
                                 variant="project"
-                                projectName={project.name}
-                                startDate={format(project.startDate, "MMM yyyy")}
+                                projectName={project.projectName || ""}
+                                startDate={project.startDate ? format(project.startDate, "MMM yyyy") : ""}
                                 endDate={project.ongoing ? "Present" : project.endDate ? format(project.endDate, "MMM yyyy") : undefined}
                                 isOngoing={project.ongoing}
                                 description={project.description}
@@ -168,8 +223,8 @@ function Projects() {
                                     <CustomCard
                                         key={index}
                                         variant="project"
-                                        projectName={project.name}
-                                        startDate={format(project.startDate, "MMM yyyy")}
+                                        projectName={project.projectName || ""}
+                                        startDate={project.startDate ? format(project.startDate, "MMM yyyy") : ""}
                                         endDate={project.ongoing ? "Present" : project.endDate ? format(project.endDate, "MMM yyyy") : undefined}
                                         isOngoing={project.ongoing}
                                         description={project.description}
@@ -193,7 +248,7 @@ function Projects() {
                     <div className="grid grid-cols-2 gap-4 w-full ">
                         <FormField
                             control={form.control}
-                            name="projects.0.name"
+                            name="projectName"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Project Name *</FormLabel>
@@ -207,7 +262,7 @@ function Projects() {
 
                         <FormField
                             control={form.control}
-                            name="projects.0.website"
+                            name="website"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Project URL</FormLabel>
@@ -222,7 +277,7 @@ function Projects() {
 
                     <FormField
                         control={form.control}
-                        name="projects.0.description"
+                        name="description"
                         render={({ field }) => (
                             <FormItem className="w-full">
                                 <FormLabel>Description *</FormLabel>
@@ -241,7 +296,7 @@ function Projects() {
                     <div className="grid grid-cols-2 gap-4 w-full">
                         <FormField
                             control={form.control}
-                            name="projects.0.startDate"
+                            name="startDate"
                             render={({ field }) => (
                                 <FormItem className="flex flex-col">
                                     <FormLabel>Start Date *</FormLabel>
@@ -280,7 +335,7 @@ function Projects() {
 
                         <FormField
                             control={form.control}
-                            name="projects.0.endDate"
+                            name="endDate"
                             render={({ field }) => (
                             <FormItem className="flex flex-col">
                                 <FormLabel>End Date *</FormLabel>
@@ -293,7 +348,7 @@ function Projects() {
                                                     "w-full pl-3 text-left font-normal",
                                                     !field.value && "text-muted-foreground"
                                                 )}
-                                                disabled={form.watch("projects.0.ongoing")}
+                                                disabled={form.watch("ongoing")}
                                             >
                                                 {field.value ? (
                                                     format(field.value, "PPP")
@@ -321,7 +376,7 @@ function Projects() {
 
                     <FormField
                         control={form.control}
-                        name="projects.0.ongoing"
+                        name="ongoing"
                         render={({ field }) => (
                             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                 <FormControl>
@@ -354,9 +409,8 @@ function Projects() {
                         type="button"
                         size="default"
                         variant="destructive"
-                        // disabled={isLoading}
                         className="min-w-[6rem]"
-                        onClick={() => form.reset()}
+                        onClick={handleClearForm}
                     >
                         Clear
                     </Button>
@@ -365,5 +419,4 @@ function Projects() {
         </Form>
     )
 }
-
 export default Projects
