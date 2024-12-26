@@ -26,7 +26,7 @@ export interface Experience {
 export interface Education {
     institutionName: string;
     website: string;
-    areaOfStudy: string;
+    degree: string;
     typeOfStudy: string;
     description: string;
     startDate: string;
@@ -40,7 +40,7 @@ export interface SkillsAndLanguages {
         skillLevel:string;
     }[];
     languages: {
-        language: string;
+        languageName: string;
         proficiency: string;
     }[];
 }
@@ -55,7 +55,7 @@ export interface Project {
 }
 
 export interface Certificate {
-    name: string;
+    certificateName: string;
     issuedBy: string;
     date: string;
     website: string;

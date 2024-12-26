@@ -169,14 +169,14 @@ const handleClearForm = () => {
     try {
         // Clear Zustand store
         setPersonalInfo({
-            name: "",
-            bio: "",
-            phone: "",
-            location: "",
-            email: "",
-            website: "",
-            socialLinks: [],
-            summary: ""
+            name: undefined,
+            bio: undefined,
+            phone: undefined,
+            location: undefined,
+            email: undefined,
+            website: undefined,
+            socialLinks: undefined,
+            summary: undefined
         });
         
         // Reset form to empty values

@@ -1,290 +1,205 @@
 "use client";
-import Image from "next/image";
 import { savePDF } from '@progress/kendo-react-pdf';
 import { Button } from "@/components/ui/button";
-import { TypographyH4 } from "@/components/ui/Typography";
-import Link from "next/link";
+import { TypographyH4 } from '@/components/ui/Typography';
+import Link from 'next/link';
 
 
 const exportPDF = () => {
-    const element = document.getElementById('resume2');
+    const element = document.getElementById('resume3');
     if (element) {
         savePDF(element, {
             paperSize: 'A4',
+            avoidLinks: false,
             margin: 0,
-            scale: 0.75,
+            scale: 0.62,
             fileName: 'resume.pdf',
-            
         });
     }
 };
 
+const projects = [
+    {
+        name: "E-Commerce Platform",
+        duration: "2023",
+        description: "Developed a full-stack e-commerce platform using Next.js and Node.js",
+        technologies: ["Next.js", "Node.js", "MongoDB", "Stripe"],
+    },
+    {
+        name: "AI-Powered Analytics Dashboard",
+        duration: "2022",
+        description: "Built a real-time analytics dashboard with AI-driven insights",
+        technologies: ["React", "Python", "TensorFlow", "AWS"],
+    },
+    {
+        name: "Mobile Payment App",
+        duration: "2021",
+        description: "Designed and developed a secure mobile payment application",
+        technologies: ["React Native", "Firebase", "Redux"],
+    },
+    {
+        name: "Mobile Payment App",
+        duration: "2021",
+        description: "Designed and developed a secure mobile payment application",
+        technologies: ["React Native", "Firebase", "Redux"],
+    }
+];
+
+
 export default function ResumeTemplet2() {
     return (
         <div className=' flex flex-col gap-6 items-center'>
-        
-        <div className="max-w-4xl mx-auto bg-white shadow-lg flex" id="resume2">
-            {/* Left Sidebar */}
-            <div className="w-[16rem] flex flex-col justify-start items-start gap-8  bg-[#1B2A41] text-white p-8">
-                {/* Profile Image */}
-                <div className="w-32 h-32 rounded bg-gray-500">
-                    {/* <Image
-                    src="/placeholder.svg?height=128&width=128"
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                    /> */}
-                </div>
-                {/* Contact Section */}
-                <div className="">
-                    <TypographyH4 className="text-lg font-semibold mb-2">CONTACT</TypographyH4>
-                    <div className="space-y-2 text-sm">
-                    <div className="flex flex-col justify-start items-start text-xs font-thin gap-2">
-                        <p>+917488355142</p>
-                        <p>debojeetkarmakar2020@gmail.com</p>
-                        <p>Kolkata, West Bengal</p>
-                        <p>www.debojeetkarmakar.com</p>
-                    </div>
-                    </div>
-                </div>
-                {/* Education Section */}
-                <div className="">
-                    <TypographyH4 className="text-lg font-semibold mb-1">EDUCATION</TypographyH4>
-                    <div className="space-y-4">
-                        <div className="flex flex-col justify-start items-start gap-1">
-                            <p className="text-[0.65rem] text-gray-300">
-                                {/* Start Date - End Date or Ongoing */}
-                                2021 - Present
-                            </p>
-                            <div>
-                                <p className="font-medium text-md">
-                                {/* Institution Name */}
-                                JIS University
-                                </p>
-                                <div className="text-xs flex flex-wrap">
-                                    {/* Degree , field of study*/}
-                                    <p>B-Tech <span> </span> </p>,
-                                    <p>Computer Science</p>
-                                </div>
-                            </div>
-                            <p className="text-xs">Score: 8.7CGPA</p>
-                        </div>
-                        <div className="flex flex-col justify-start items-start gap-1">
-                            <p className="text-[0.65rem] text-gray-300">
-                                {/* Start Date - End Date or Ongoing */}
-                                2019 - 2021
-                            </p>
-                            <div>
-                                <p className="font-medium text-md">
-                                {/* Institution Name */}
-                                Rajkamal Saraswati Vidya Mandir
-                                </p>
-                                <div className="text-xs flex flex-wrap">
-                                    {/* Degree , field of study*/}
-                                    <p>12th  <span> </span> </p>,
-                                    <p>Physics, Chemistry, Maths</p>
-                                </div>
-                            </div>
-                            <p className="text-xs">Score: 82%</p>
-                        </div>
-                    </div>
-                </div>
-                {/* Skills Section */}
-                <div className="">
-                    <TypographyH4 className="text-lg font-semibold mb-1">SKILLS</TypographyH4>
-                    <ul className="list-disc list-inside space-y-1 text-xs">
-                        <li>HTML <span className="italic text-[0.5rem] text-gray-400">Intermediate</span></li>
-                        <li>CSS <span className="italic text-[0.5rem] text-gray-400">Expert</span></li>
-                        <li>Tailwind <span className="italic text-[0.5rem] text-gray-400">Expert</span></li>
-                        <li>Javascript <span className="italic text-[0.5rem] text-gray-400">Intermediate</span></li>
-                        <li>React js <span className="italic text-[0.5rem] text-gray-400">Expert</span></li>
-                        <li>Next js <span className="italic text-[0.5rem] text-gray-400">Expert</span></li>
-                        <li>Postgresql <span className="italic text-[0.5rem] text-gray-400">Intermediate</span></li>
-                        <li>Monngo DB <span className="italic text-[0.5rem] text-gray-400">Intermediate</span></li>
-                        <li>Redux Toolkit <span className="italic text-[0.5rem] text-gray-400">Intermediate</span></li>
-                        <li>Data Modeling <span className="italic text-[0.5rem] text-gray-400">Intermediate</span></li>
-                        <li>Effective Communication <span className="italic text-[0.5rem] text-gray-400">Beginner</span></li>
-                        <li>Ui/Ux <span className="italic text-[0.5rem] text-gray-400">Intermediate</span></li>
-                    </ul>
-                </div>
-                {/* Languages Section */}
-                <div>
-                    <TypographyH4 className="text-lg font-semibold mb-1">LANGUAGES</TypographyH4>
-                    <ul className="list-disc list-inside space-y-1 text-xs ">
-                        <li>English <span className="italic text-[0.6rem] text-gray-400">(Intermediate)</span></li>
-                        <li>Hindi <span className="italic text-[0.6rem] text-gray-400">(Fluent)</span></li>
-                        <li>Bengali <span className="italic text-[0.6rem] text-gray-400">(Native)</span></li>
-                    </ul>
+        <div className="max-w-4xl mx-auto p-8 bg-white " id='resume3'>
+            {/* Header */}
+            <header className="text-center mb-4">
+            <h1 className="text-3xl font-semibold text-[#8B5CF6] mb-2 uppercase">
+                Debojeet Karmakar
+            </h1>
+            <h3 className='text-gray-500'>Designer | Developer</h3>
+            <div className='text-sm'>
+                <div className='flex flex-wrap justify-center items-center gap-x-2 gap-y-0 text-gray-600 space-y-1 w-full  '>
+                    <p>+917488355142</p>,
+                    <p>Kolkata, West Bengal</p>,
+                    <p>debojeetkarmakar.com</p>,
+                    <p>debojeetkarmakar2020@gmail.com</p>,
+                    <p>Github-@debojeet2004</p>,
+                    <Link href="https://www.linkedin.com/in/debojeet-karmakar-852820210/" target="_blank" >Linkdine-@debojeet2004</Link>,
+                    <p>Twitter-@debojeet2004</p>
                 </div>
             </div>
+            </header>
     
-            {/* Main Content */}
-            <div className="flex-1 py-8 px-4">
-                {/* Header */}
-                <div className="mb-1">
-                    <h1 className="text-3xl font-bold text-gray-800 uppercase">Debojeet Karmakar</h1>
-                    <p className="text-md tracking-wide text-gray-600 uppercase">Full Stack Developer</p>
-                </div>
-        
-                {/* Social Links Section */}
-                <div className="mb-4">
-                    <div className="flex gap-1 italic text-gray-600 text-xs">
-                    <Link href="https://www.linkedin.com/in/debojeet-karmakar-852820210/" target="_blank" >Linkdine-@debojeet2004</Link>,
-                    <Link href="https://www.linkedin.com/in/debojeet-karmakar-852820210/" target="_blank" >Twitter-@debojeet2004</Link>,
-                    <Link href="https://www.linkedin.com/in/debojeet-karmakar-852820210/" target="_blank" >Github-@debojeet2004</Link>
+            {/* Summary Section */}
+            <section className="mb-3">
+            <TypographyH4 className="text-[#8B5CF6] font-semibold mb-1">SUMMARY</TypographyH4>
+            <p className="text-gray-700 text-justify">
+                Pursuing Bachelor&apos;s in Computer Science at JIS University, actively learning full-stack
+                development alongside studies. Focused on frontend development, web design, and intrigued
+                by artificial intelligence. Passionate about innovation and committed to excelling in the tech
+                industry.
+            </p>
+            </section>
+    
+            {/* Work Experience Section */}
+            <section className="mb-3">
+            <TypographyH4 className="text-[#8B5CF6] font-semibold mb-3">WORK EXPERIENCE</TypographyH4>
+            <div className="space-y-3">
+                <div>
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-black font-semibold">Engineering Executive, Borcelle Technologies</h3>
+                        <span className="text-gray-600 text-sm italic">Jan 2023 - Present</span>
                     </div>
+                    <ul className="list-disc list-inside text-gray-700 space-y-1 text-sm">
+                        <li>Implemented cost-effective solutions, resulting in a 20% reduction in project expenses.</li>
+                        <li>Streamlined project workflows, enhancing overall efficiency by 25%.</li>
+                        <li>Led a team in successfully delivering multiple engineering projects within the allocated budget.</li>
+                    </ul>
                 </div>
-        
-                {/* Profile Section */}
-                <div className="mb-4">
-                    <h2 className="text-xl font-bold text-gray-600 mb-1 uppercase">Summary</h2>
-                    <p className="text-gray-600 text-sm text-justify">
-                    Pursuing Bachelor&apos;s in Computer Science at JIS University, actively learning full-stack
-                    development alongside studies. Focused on frontend development, web design, and intrigued
-                    by artificial intelligence. Passionate about innovation and committed to excelling in the tech
-                    industry.
+    
+                <div>
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-black font-semibold">Project Engineer, Selford & Co.</h3>
+                        <span className="text-gray-600 text-sm italic">Mar 2021 - Dec 2022</span>
+                    </div>
+                    <p className=" list-disc list-inside text-gray-700 space-y-1 text-sm">
+                        Managed project timelines with strategic efficiency, successfully reducing delivery times by 30%. Spearheaded the adoption of cutting-edge engineering software, which significantly improved process accuracy by 15%. Additionally, collaborated effectively with cross-functional teams, enhancing overall project success rates by 10%.
                     </p>
                 </div>
-        
-                {/* Project Section */}
-                <div className="mb-4">
-                    <h2 className="text-xl font-bold text-gray-600 mb-1 uppercase">Projects</h2>
-                    <div className="space-y-4">
-                        <div>
-                            <div className="flex justify-between items-center">
-                                <p className="font-semibold text-gray-600">Lets Meet <span className="italic text-xs text-gray-500 font-thin uppercase">OCT-2024</span></p>
-                                <p className="text-xs text-gray-600 italic"> www.letsmeet.com</p>
-                            </div>
-                            <div className="mt-2 mb-2 flex flex-wrap gap-2">
-                                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-[0.6rem]">Next.js</span>
-                                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-[0.6rem]">React</span>
-                                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-[0.6rem]">Tailwind CSS</span>
-                                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-[0.6rem]">Node.js</span>
-                            </div>
-                            <p className="text-gray-600 text-xs">Develop and execute comprehensive marketing strategies and campaigns aligned with company goals and objectives.</p>
-                        </div>
-                    <div>
-                        <div className="flex justify-between items-center">
-                            <p className="font-semibold text-gray-600">Lets Meet <span className="italic text-xs text-gray-500 font-thin uppercase">OCT-2024</span></p>
-                            <p className="text-xs text-gray-600 italic"> www.letsmeet.com</p>
-                        </div>
-                        <div className="mt-2 mb-2 flex flex-wrap gap-2">
-                            <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-[0.6rem]">Next.js</span>
-                            <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-[0.6rem]">React</span>
-                            <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-[0.6rem]">Tailwind CSS</span>
-                            <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-[0.6rem]">Node.js</span>
-                        </div>
-                        <p className="text-gray-600 text-xs">Develop and execute comprehensive marketing strategies and campaigns aligned with company goals and objectives.</p>
-                    </div>
-                    </div>
-                </div>
-                {/* Work Experience Section */}
-                <div className="mb-4">
-                    <h2 className="text-xl font-bold text-gray-600 mb-1">WORK EXPERIENCE</h2>
-                    <div className="space-y-4">
-                        <div>
-                            <div className="flex justify-between items-center">
-                                <p className="font-semibold text-gray-600">Hyrecruit Ai</p>
-                                <p className="text-xs text-gray-600 italic">Currently Working</p>
-                            </div>
-                            <div className="text-sm text-gray-500 font-medium mb-2">Full stack Developer</div>
-                            <ul className="list-disc list-outside pl-4 space-y-1 text-xs text-gray-600">
-                                <li className="pl-2">
-                                    Develop and execute comprehensive marketing strategies and campaigns aligned with company goals and objectives.
-                                </li>
-                                <li className="pl-2">
-                                    Lead, manage, and mentor a high-performing marketing team, fostering a collaborative and results-driven work environment.
-                                </li>
-                                <li className="pl-2">
-                                    Monitor brand consistency across marketing channels and materials.
-                                </li>
-                            </ul>
-                        </div>
-                        <div>
-                            <div className="flex justify-between items-center">
-                                <p className="font-semibold text-gray-600">Training Mug</p>
-                                <p className="text-xs text-gray-600 italic">2024</p>
-                            </div>
-                            <div className="text-sm text-gray-500 font-medium mb-2">Full stack Developer</div>
-                            <ul className="list-disc list-outside pl-4 space-y-1 text-xs text-gray-600">
-                                <li className="pl-2">
-                                    Develop and execute comprehensive marketing strategies and campaigns aligned with company goals and objectives.
-                                </li>
-                                <li className="pl-2">
-                                    Lead, manage, and mentor a high-performing marketing team, fostering a collaborative and results-driven work environment.
-                                </li>
-                                <li className="pl-2">
-                                    Monitor brand consistency across marketing channels and materials.
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                
-                {/* Certification Section */}
+    
                 <div>
-                    <h2 className="text-xl font-bold text-gray-600 mb-1 uppercase">CERTIFICATIONS</h2>
-                    <div className="space-y-4">
-                        <div>
-                            <div className="flex justify-between items-center">
-                                <p className="font-semibold text-gray-600">
-                                    Full Stack Web Development Certification
-                                    <span className="italic text-xs text-gray-500 ml-2">Issued by Udemy</span>
-                                </p>
-                                <p className="text-xs text-gray-600 italic">Aug 2023</p>
-                            </div>
-                            <div className="mt-1 mb-2">
-                                <p className="text-xs text-gray-600">
-                                    Certificate URL: 
-                                    <Link 
-                                        href="https://www.udemy.com/certificate/example" 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
-                                        className="text-blue-600 ml-1 hover:underline"
-                                    >
-                                        View Certificate
-                                    </Link>
-                                </p>
-                            </div>
-                            <p className="text-gray-600 text-xs">
-                                Comprehensive certification covering full-stack web development technologies including 
-                                React, Node.js, Express, and MongoDB. Completed advanced projects demonstrating 
-                                proficiency in modern web development practices.
-                            </p>
-                        </div>
-                        
-                        <div>
-                            <div className="flex justify-between items-center">
-                                <p className="font-semibold text-gray-600">
-                                    React Specialization
-                                    <span className="italic text-xs text-gray-500 ml-2">Issued by Coursera</span>
-                                </p>
-                                <p className="text-xs text-gray-600 italic">Dec 2022</p>
-                            </div>
-                            <div className="mt-1 mb-2">
-                                <p className="text-xs text-gray-600">
-                                    Certificate URL: 
-                                    <Link 
-                                        href="https://www.coursera.org/certificate/example" 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
-                                        className="text-blue-600 ml-1 hover:underline"
-                                    >
-                                        View Certificate
-                                    </Link>
-                                </p>
-                            </div>
-                            <p className="text-gray-600 text-xs">
-                                Advanced React certification covering component design, state management, 
-                                hooks, and modern React ecosystem best practices.
-                            </p>
-                        </div>
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-black font-semibold">Graduate Engineer, Arorewal Industries</h3>
+                        <span className="text-gray-600 text-sm italic">Feb 2020 - Jan 2021</span>
                     </div>
+                    <ul className="list-disc list-inside text-gray-700 space-y-1 text-sm">
+                        <li>Coordinated project tasks while ensuring adherence to engineering standards and regulations.</li>
+                        <li>Conducted comprehensive project analyses, identifying and rectifying discrepancies in engineering designs.</li>
+                    </ul>
                 </div>
             </div>
+            </section>
+            {/* Projects Section */}
+            {/* if even then col 2 if odd  then col 1 */}
+            <section className="mb-3">
+                    <TypographyH4 className="text-[#8B5CF6] font-semibold mb-2">PROJECTS</TypographyH4>
+                    <div className="grid grid-cols-2 gap-4">
+                        {projects.map((project, index) => (
+                            <div key={index} className="border border-gray-300 rounded-lg p-4 flex flex-col h-full">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h3 className="text-black font-semibold">{project.name}</h3>
+                                    <span className="text-gray-600 text-sm">{project.duration}</span>
+                                </div>
+                                <p className="text-gray-700 text-sm mb-2 flex-grow">{project.description}</p>
+                                <div className="flex flex-wrap gap-2 mb-2">
+                                    {project.technologies.map((tech, techIndex) => (
+                                        <span
+                                            key={techIndex}
+                                            className="px-2 py-1 bg-purple-50 text-purple-600 rounded-md text-xs"
+                                        >
+                                            {tech}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            {/* Education Section */}
+            <section className="mb-3">
+            <TypographyH4 className="text-[#8B5CF6] font-semibold mb-3">EDUCATION</TypographyH4>
+            
+            <div className="space-y-4">
+                <div>
+                <div className="flex justify-between items-start mb-1">
+                    <div>
+                        <h3 className="text-black font-semibold">Master of Science in Mechanical Engineering</h3>
+                        <p className="text-gray-700 text-sm">University of Engineering and Technology</p>
+                    </div>
+                    <span className="text-gray-600 text-sm italic">Sep 2019 - Oct 2020</span>
+                </div>
+                <ul className="list-disc list-inside text-gray-700 text-xs">
+                    <li>Specialization in Advanced Manufacturing</li>
+                    <li>Research Project: "Optimization of Manufacturing Practices"</li>
+                </ul>
+                </div>
+    
+                <div>
+                <div className="flex justify-between items-start mb-1">
+                    <div>
+                        <h3 className="text-black font-semibold">Bachelor of Science in Civil Engineering</h3>
+                        <p className="text-gray-700 text-sm">City College of Engineering</p>
+                    </div>
+                    <span className="text-gray-600 text-sm italic">Aug 2015 - Aug 2019</span>
+                </div>
+                <ul className="list-disc list-inside text-gray-700 text-xs">
+                    <li>Relevant coursework in Structural Design and Project Management.</li>
+                </ul>
+                </div>
+            </div>
+            </section>
+    
+            {/* Additional Information Section */}
+            <section>
+            <TypographyH4 className="text-[#8B5CF6] font-semibold mb-3">ADDITIONAL INFORMATION</TypographyH4>
+            
+            <div className="space-y-2">
+                <div>
+                <span className="text-black font-semibold">Technical Skills:</span>
+                <span className="text-gray-700"> Project Management, Structural Analysis, Robotics and Automation, CAD</span>
+                </div>
+                <div>
+                <span className="text-black font-semibold">Languages:</span>
+                <span className="text-gray-700"> English, Malay, German</span>
+                </div>
+                <div>
+                <span className="text-black font-semibold">Certifications:</span>
+                <span className="text-gray-700"> Professional Engineer (PE) License, Project Management Professional (PMP)</span>
+                </div>
+            </div>
+            </section>
         </div>
         <Button onClick={exportPDF}>Download as PDF</Button>
+            
         </div>
     )
 }
-
-

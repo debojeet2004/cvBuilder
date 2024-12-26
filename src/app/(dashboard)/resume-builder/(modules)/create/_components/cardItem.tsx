@@ -19,11 +19,10 @@ interface ExperienceCard extends BaseCardProps {
 interface EducationCard extends BaseCardProps {
     variant: 'education';
     institutionName: string;
-    areaOfStudy: string;
     startDate: string;
     endDate?: string;
-    degree?: string;
-    fieldOfStudy?: string;
+    degree: string;
+    typeOfStudy?: string;
 }
 
 interface ProjectCard extends BaseCardProps {
@@ -65,7 +64,7 @@ const getSubtitleFormat = {
         return `${props.position} ${date}`;
     },
     education: (props: EducationCard) => {
-        const degree = `${props.degree || ''} ${props.fieldOfStudy || props.areaOfStudy}`;
+        const degree = `${props.degree} ${props.typeOfStudy}`;
         return `${degree} (${props.startDate} - ${props.endDate || 'Present'})`;
     },
     project: (props: ProjectCard) => {

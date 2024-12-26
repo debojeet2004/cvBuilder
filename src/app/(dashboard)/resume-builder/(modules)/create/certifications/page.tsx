@@ -20,7 +20,7 @@ import { toast } from 'sonner'
 import useMainStore from '../../store/store'
 
 const certificationsSchema = z.object({
-    name: z.string().optional(),
+    certificateName: z.string().optional(),
     issuedBy: z.string().optional(),
     date: z.date().optional(),
     website: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
@@ -78,7 +78,7 @@ function Certifications() {
     const form = useForm<CertificationsFormValues>({
         resolver: zodResolver(certificationsSchema),
         defaultValues: {
-            name: '',
+            certificateName: '',
             issuedBy: '',
             date: undefined,
             website: '',
@@ -97,7 +97,7 @@ function Certifications() {
                         dispatch({
                             type: 'ADD_CERTIFICATION',
                             payload: {
-                                name: certificate.name,
+                                certificateName: certificate.certificateName,
                                 issuedBy: certificate.issuedBy,
                                 date: certificate.date ? new Date(certificate.date) : undefined,
                                 website: certificate.website,
@@ -116,7 +116,7 @@ function Certifications() {
     const onSubmit = async () => {
         try {
             const formattedCertificates = certificateState.certifications.map(certificate => ({
-                name: certificate.name || '',
+                certificateName: certificate.certificateName || '',
                 issuedBy: certificate.issuedBy || '',
                 date: certificate.date ? certificate.date.toISOString() : '',
                 website: certificate.website || '',
@@ -136,7 +136,7 @@ function Certifications() {
 
     const handleAddCertification = () => {
         const values = form.getValues()
-        if (values.name && values.issuedBy && values.date) {
+        if (values.certificateName && values.issuedBy && values.date) {
             dispatch({ type: 'ADD_CERTIFICATION', payload: values })
             form.reset()
         } else {
@@ -155,7 +155,7 @@ function Certifications() {
             
             // Reset form to empty values
             form.reset({
-                name: '',
+                certificateName: '',
                 issuedBy: '',
                 date: undefined,
                 website: '',
@@ -182,7 +182,7 @@ function Certifications() {
                             <CustomCard
                                 key={index}
                                 variant="certification"
-                                certificateName={cert.name || ''}
+                                certificateName={cert.certificateName || ''}
                                 issuedBy={cert.issuedBy || ''}
                                 issuedDate={cert.date ? format(cert.date, "yyyy-MM") : ''}
                                 description={cert.description}
@@ -212,7 +212,7 @@ function Certifications() {
                                     <CustomCard
                                         key={index}
                                         variant="certification"
-                                        certificateName={cert.name || ''}
+                                        certificateName={cert.certificateName || ''}
                                         issuedBy={cert.issuedBy || ''}
                                         issuedDate={cert.date ? format(cert.date, "yyyy-MM") : ''}
                                         description={cert.description}
@@ -236,7 +236,7 @@ function Certifications() {
                     <div className="grid grid-cols-2 gap-4 w-full">
                         <FormField
                             control={form.control}
-                            name="name"
+                            name="certificateName"
                             render={({ field }) => (
                                 <FormItem className="flex-1">
                                     <FormLabel className="mb-2">Certification Name *</FormLabel>
@@ -370,5 +370,4 @@ function Certifications() {
         </Form>
     )
 }
-
 export default Certifications

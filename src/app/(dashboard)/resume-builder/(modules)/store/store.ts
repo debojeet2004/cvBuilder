@@ -23,6 +23,12 @@ interface MainStoreState {
     setEducation: (projects: Education[]) => void;
     setExperience: (projects: Experience[]) => void;
     setCertificates: (certificates: Certificate[]) => void;
+
+    selectedTemplate: 'Template1' | 'Template2'
+    setSelectedTemplate: (template: 'Template1' | 'Template2') => void
+
+    exportPDF?: () => void;
+    setExportPDF: (exportPDF: () => void) => void;
 }
 
 const useMainStore = create<MainStoreState>()(
@@ -78,6 +84,12 @@ const useMainStore = create<MainStoreState>()(
                     experiences: experiences
                 }));
             },
+
+            selectedTemplate: 'Template1',
+            setSelectedTemplate: (template) => set({ selectedTemplate: template }),
+
+            exportPDF: undefined,
+            setExportPDF: (exportPDF) => set({ exportPDF }),
         }), { name: 'main-store', })
 );
 export default useMainStore;

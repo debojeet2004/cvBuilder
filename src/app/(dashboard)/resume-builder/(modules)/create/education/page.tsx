@@ -43,7 +43,7 @@ const educationSchema = z.object({
         .url({ message: "Please enter a valid URL" })
         .optional()
         .or(z.literal("")),
-    areaOfStudy: z.string(),
+    degree: z.string(),
     typeOfStudy: z.string(),
     description: z.string().optional(),
     startDate: z.date().optional(),
@@ -106,7 +106,7 @@ function Education() {
         defaultValues: {
             institutionName: "",
             website: "",
-            areaOfStudy: "",
+            degree: "",
             typeOfStudy: "",
             description: "",
             startDate: undefined,
@@ -128,7 +128,7 @@ function Education() {
                             payload: {
                                 institutionName: edu.institutionName,
                                 website: edu.website,
-                                areaOfStudy: edu.areaOfStudy,
+                                degree: edu.degree,
                                 typeOfStudy: edu.typeOfStudy,
                                 description: edu.description,
                                 startDate: edu.startDate ? new Date(edu.startDate) : undefined,
@@ -150,7 +150,7 @@ function Education() {
             const formattedEducation = educationState.educationList.map((edu) => ({
                 institutionName: edu.institutionName,
                 website: edu.website || "",
-                areaOfStudy: edu.areaOfStudy,
+                degree: edu.degree,
                 typeOfStudy: edu.typeOfStudy,
                 description: edu.description || "",
                 startDate: edu.startDate ? edu.startDate.toISOString() : "",
@@ -171,7 +171,7 @@ function Education() {
             form.reset({
                 institutionName: '',
                 website: '',
-                areaOfStudy: '',
+                degree: '',
                 typeOfStudy: '',
                 description: '',
                 startDate: undefined,
@@ -188,7 +188,7 @@ function Education() {
 
     const handleAddEducation = () => {
         const values = form.getValues();
-        if (values.institutionName && values.areaOfStudy && values.startDate) {
+        if (values.institutionName && values.degree && values.startDate) {
             dispatch({ type: "ADD_EDUCATION", payload: values });
             form.reset();
         } else {
@@ -213,7 +213,8 @@ function Education() {
                                 key={index}
                                 variant="education"
                                 institutionName={edu.institutionName}
-                                areaOfStudy={edu.areaOfStudy}
+                                degree={edu.degree}
+                                typeOfStudy={edu.typeOfStudy}
                                 startDate={edu.startDate ? format(edu.startDate, "MMM yyyy") : ""}
                                 endDate={
                                     edu.ongoing
@@ -222,7 +223,6 @@ function Education() {
                                             ? format(edu.endDate, "MMM yyyy")
                                             : undefined
                                 }
-                                degree={edu.typeOfStudy}
                                 description={edu.description}
                                 onRemove={() => handleRemoveEducation(index)}
                             />
@@ -255,7 +255,8 @@ function Education() {
                                         key={index}
                                         variant="education"
                                         institutionName={edu.institutionName}
-                                        areaOfStudy={edu.areaOfStudy}
+                                        degree={edu.degree}
+                                        typeOfStudy={edu.typeOfStudy}
                                         startDate={edu.startDate ? format(edu.startDate, "MMM yyyy") : ""}
                                         endDate={
                                             edu.ongoing
@@ -264,7 +265,6 @@ function Education() {
                                                     ? format(edu.endDate, "MMM yyyy")
                                                     : undefined
                                         }
-                                        degree={edu.typeOfStudy}
                                         description={edu.description}
                                         onRemove={() => handleRemoveEducation(index)}
                                     />
@@ -318,12 +318,12 @@ function Education() {
                     <div className="grid grid-cols-2 gap-4 w-full">
                         <FormField
                             control={form.control}
-                            name="areaOfStudy"
+                            name="degree"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Area of Study *</FormLabel>
+                                    <FormLabel>Degree*</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="e.g. Computer Science" {...field} />
+                                        <Input placeholder="e.g. Bachelor's Degree" {...field} />
                                     </FormControl>
                                     <FormMessage className="text-red-600 font-inter font-normal text-xs" />
                                 </FormItem>
@@ -335,9 +335,9 @@ function Education() {
                             name="typeOfStudy"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Type of Study *</FormLabel>
+                                    <FormLabel>Field of Study *</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="e.g. Bachelor's Degree" {...field} />
+                                        <Input placeholder="e.g. Computer Science" {...field} />
                                     </FormControl>
                                     <FormMessage className="text-red-600 font-inter font-normal text-xs" />
                                 </FormItem>
@@ -484,7 +484,6 @@ function Education() {
                         type="button"
                         size="default"
                         variant="destructive"
-                        // disabled={isLoading}
                         className="min-w-[6rem]"
                         onClick={handleClearForm}
                     >

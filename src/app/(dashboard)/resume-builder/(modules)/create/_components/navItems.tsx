@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import useMainStore from "../../store/store"
+import { useState } from "react"
 
 const formSchema = z.object({
     fileName: z.string().min(1, "File name is required").max(50, "File name cannot exceed 50 characters"),
@@ -19,24 +20,35 @@ const formSchema = z.object({
 })
 
 export default function NavItems() {
+    const { setSelectedTemplate, exportPDF } = useMainStore();
     const { personalInfo, skillsAndLanguages, educations, projects, experiences, certificates } = useMainStore();
+    const [buttonAction, setButtonAction] = useState<'save' | 'download'>('save');
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             fileName: "Untitled Resume",
             template: "Template1", // Default template
         },
-    })
+    })// here there is a problem here just toggle the templet and refresh the page to know it think here we ahve to use the loadstoredata function using useeffect
 
-    // Add form submission handler
     function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values)
-        console.log("personalInfo:", personalInfo)
-        console.log("skillsAndLanguages:", skillsAndLanguages)
-        console.log("educations:", educations)
-        console.log("projects:", projects)
-        console.log("experiences:", experiences)
-        console.log("certificates:", certificates)
+        if (buttonAction === 'save') {
+            // Implement save logic here
+            console.log("Saving resume:", values)
+            console.log("Resume data:", {
+                personalInfo,
+                skillsAndLanguages,
+                educations,
+                projects,
+                experiences,
+                certificates
+            })
+            // Add your save functionality here
+        } else if (buttonAction === 'download' && exportPDF) {
+            if (exportPDF) {
+                exportPDF();
+            }
+        }
     }
     return (
         <>
@@ -92,7 +104,10 @@ export default function NavItems() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <Select
-                                                    onValueChange={field.onChange}
+                                                    onValueChange={(value) => {
+                                                        field.onChange(value)
+                                                        setSelectedTemplate(value as 'Template1' | 'Template2')
+                                                    }}
                                                     defaultValue={field.value}
                                                 >
                                                     <FormControl>
@@ -121,9 +136,23 @@ export default function NavItems() {
                                         )}
                                     />
                                 </div>
-                                <Button type="submit" variant='secondary'><DownloadIcon /> Download</Button>
-                                {/* <Button type="submit" variant='default'><ShareIcon /> Share</Button> */}
-                                <Button type="submit" variant='default'><SaveIcon /> Save</Button>
+                                <div className='flex gap-4'>
+                                {/* ... existing template select ... */}
+                                <Button 
+                                    type="submit" 
+                                    variant='secondary'
+                                    onClick={() => setButtonAction('download')}
+                                >
+                                    <DownloadIcon /> Download
+                                </Button>
+                                <Button 
+                                    type="submit" 
+                                    variant='default'
+                                    onClick={() => setButtonAction('save')}
+                                >
+                                    <SaveIcon /> Save
+                                </Button>
+                            </div>
                             </div>
                         </div>
                     </form>

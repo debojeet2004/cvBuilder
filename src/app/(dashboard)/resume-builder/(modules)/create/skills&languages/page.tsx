@@ -16,11 +16,11 @@ import useMainStore from '../../store/store'
 
 const skillSchema = z.object({
     skills: z.array(z.object({
-        name: z.string(),
-        level: z.string().optional()
+        skillName: z.string(),
+        skillLevel: z.string().optional()
     })),
     languages: z.array(z.object({
-        name: z.string(),
+        languageName: z.string(),
         proficiency: z.string().optional()
     }))
 })
@@ -105,11 +105,11 @@ function Skills() {
         resolver: zodResolver(skillSchema),
         defaultValues: {
             skills: [{
-                name: '', 
-                level: undefined ,
+                skillName: '', 
+                skillLevel: undefined,
             }],
             languages: [{
-                name: '',
+                languageName: '',
                 proficiency: undefined,
             }]
         }
@@ -143,7 +143,7 @@ function Skills() {
                         dispatch({
                             type: 'ADD_LANGUAGE',
                             payload: {
-                                name: language.language,
+                                name: language.languageName,
                                 proficiency: language.proficiency
                             }
                         });
@@ -170,7 +170,7 @@ function Skills() {
                     skillLevel: skill.level || 'beginner'
                 })),
                 languages: skillState.languages.map(language => ({
-                    language: language.name,
+                    languageName: language.name,
                     proficiency: language.proficiency || 'basic'
                 }))
             });
@@ -195,16 +195,16 @@ function Skills() {
             setSkillsandLanguages({
                 skills: [],
                 languages: []
-            });
+            } as SkillsAndLanguages);
     
             // Reset form
             form.reset({
                 skills: [{
-                    name: '', 
-                    level: undefined,
+                    skillName: '', 
+                    skillLevel: undefined,
                 }],
                 languages: [{
-                    name: '',
+                    languageName: '',
                     proficiency: undefined,
                 }]
             });
@@ -218,15 +218,15 @@ function Skills() {
             console.error('Error clearing form:', error);
             toast.error("Failed to clear form");
         }
-    };
-    const handleAddSkill = () => {
-        const skillName = form.getValues('skills.0.name')
-        const skillLevel = form.getValues('skills.0.level')
+
+    };    const handleAddSkill = () => {
+        const skillName = form.getValues('skills.0.skillName')
+        const skillLevel = form.getValues('skills.0.skillLevel')
         if (skillName && skillLevel) {
             dispatch({ type: 'ADD_SKILL', payload: { name: skillName, level: skillLevel } })
             // will reset the form fields after adding
-            form.setValue('skills.0.name', '')
-            form.setValue('skills.0.level', '')
+            form.setValue('skills.0.skillName', '')
+            form.setValue('skills.0.skillLevel', '')
         }else {
             toast.error("Please fill in all fields")
         }
@@ -236,11 +236,11 @@ function Skills() {
     }
 
     const handleAddLanguage = () => {
-        const languageName = form.getValues('languages.0.name')
+        const languageName = form.getValues('languages.0.languageName')
         const languageProficiency = form.getValues('languages.0.proficiency')
         if (languageName && languageProficiency) {
             dispatch({ type: 'ADD_LANGUAGE', payload: { name: languageName, proficiency: languageProficiency } })
-            form.setValue('languages.0.name', '')
+            form.setValue('languages.0.languageName', '')
             form.setValue('languages.0.proficiency', '')
         } else {
             toast.error("Please fill in all language fields")
@@ -308,7 +308,7 @@ function Skills() {
                         <div className="flex gap-4 w-full">
                             <FormField
                                 control={form.control}
-                                name="skills.0.name"
+                                name="skills.0.skillName"
                                 render={({ field }) => (
                                     <FormItem className="flex-1">
                                         <FormLabel>Skill Name *</FormLabel>
@@ -326,7 +326,7 @@ function Skills() {
 
                             <FormField
                                 control={form.control}
-                                name="skills.0.level"
+                                name="skills.0.skillLevel"
                                 render={({ field }) => (
                                     <FormItem className="flex-1">
                                         <FormLabel>Experience Level *</FormLabel>
@@ -418,7 +418,7 @@ function Skills() {
                         <div className="flex gap-4 w-full">
                             <FormField
                                 control={form.control}
-                                name="languages.0.name"
+                                name="languages.0.languageName"
                                 render={({ field }) => (
                                     <FormItem className="flex-1">
                                         <FormLabel>Language Name *</FormLabel>
@@ -496,5 +496,4 @@ function Skills() {
         </Form>
     )
 }
-
 export default Skills
